@@ -2,7 +2,9 @@ package lautadev.project_chat.service;
 
 import lautadev.project_chat.dto.MessageDTO;
 import lautadev.project_chat.model.Message;
+import lautadev.project_chat.model.Person;
 import lautadev.project_chat.repository.IMessageRepository;
+import lautadev.project_chat.repository.IPersonRepository;
 import lautadev.project_chat.throwable.EntityNotFoundException;
 import lautadev.project_chat.util.NullAwareBeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,9 +20,17 @@ public class MessageService implements IMessageService {
     @Autowired
     private IMessageRepository  messageRepository;
 
+    @Autowired
+    private IPersonRepository personRepository;
+
     @Override
     public MessageDTO saveMessage(Message message) {
-        if(message != null){
+        if (message != null) {
+            if (message.getSender() != null && message.getSender().getId() != null) {
+                Person sender = personRepository.findById(message.getSender().getId())
+                        .orElseThrow(() -> new EntityNotFoundException("Sender not found"));
+                message.setSender(sender);
+            }
             messageRepository.save(message);
         }
 
